@@ -7,9 +7,17 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @hilite_col = 'hilite'    
-    @movies = Movie.order(params[:sort_key]).find_all
-    
+    #debugger
+    @all_ratings = Movie.ratings
+   
+    if params[:ratings] 
+      @ratings_filter = params[:ratings].keys  
+      puts "inside else" + @ratings_filter.inspect 
+      puts "inside else" + params[:sort_key].inspect
+      @movies = Movie.order(params[:sort_key]).find_all_by_rating(@ratings_filter)
+    else
+      @movies = Movie.order(params[:sort_key]).find_all
+    end 
   end
 
   def new
