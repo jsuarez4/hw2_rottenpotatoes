@@ -7,17 +7,37 @@ class MoviesController < ApplicationController
   end
 
   def index
-    #debugger
     @all_ratings = Movie.ratings
-   
-    if params[:ratings] 
-      @ratings_filter = params[:ratings].keys  
-      puts "inside else" + @ratings_filter.inspect 
-      puts "inside else" + params[:sort_key].inspect
-      @movies = Movie.order(params[:sort_key]).find_all_by_rating(@ratings_filter)
+ 
+    if params[:sort_key]
+      session[:sort_key] = params[:sort_key]
+      
+    elsif session[:sort_key]
+      flag = true
+      params[:sort_key] = session[:sort_key]
+      
+    end
+    
+    qstring =  Movie.order(params[:sort_key])  
+  
+    if params[:commit] == 'Refresh'
+      session[:ratings] = params[:ratings]
+      
+    elsif session[:ratings] != params[:ratings]
+      flag = true
+      params[:ratings] = session[:ratings]
+      
+    end
+    
+    @ratings, @sort_key = session[:ratings], session[:sort_key]
+    
+    if (flag)
+      redirect_to movies_path(:sort_key => @sort_key,:ratings => @ratings)
     else
-      @movies = Movie.order(params[:sort_key]).find_all
-    end 
+      puts "ashwani" + (@ratings.nil? ? false : @ratings.has_key?('R')).to_s
+      @movies = @ratings.nil? ? qstring.all : qstring.find_all_by_rating(params[:ratings].keys)
+    end
+    
   end
 
   def new
